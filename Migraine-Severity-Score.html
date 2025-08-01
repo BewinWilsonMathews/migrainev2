@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Headache Impact Questionnaire</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      max-width: 800px;
+      width: 100%;
+      padding: 30px;
+      margin: 40px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 15px;
+      color: #333;
+      text-align: center;
+    }
+
+    p {
+      color: #555;
+      font-size: 1em;
+      margin-bottom: 25px;
+    }
+
+    fieldset {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #fafafa;
+    }
+
+    legend {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #222;
+    }
+
+    .tick-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tick-option {
+      flex: 1;
+      text-align: center;
+      font-size: 0.9em;
+    }
+
+    .tick-option input[type="radio"] {
+      display: block;
+      margin: 0 auto 5px auto;
+      cursor: pointer;
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 12px 18px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      background-color: #007BFF;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .score {
+      margin-top: 30px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #222;
+      text-align: center;
+      white-space: pre-line;
+    }
+
+    .video-description {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .video-description a {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 10px 16px;
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .video-description a:hover {
+      background-color: #1e7e34;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Headache Impact Questionnaire</h1>
+
+    <form id="headacheForm">
+      <p>This questionnaire helps evaluate the frequency and severity of your headaches. Please select one option per question.</p>
+
+      <fieldset>
+        <legend>Select one option per question:</legend>
+
+        <div class="question" id="q1-block">
+          <p>1. When you have headaches, how often is the pain severe?</p>
+        </div>
+
+        <div class="question" id="q2-block">
+          <p>2. How often do headaches limit your ability to do usual daily activities?</p>
+        </div>
+
+        <div class="question" id="q3-block">
+          <p>3. When you have a headache, how often do you wish you could lie down?</p>
+        </div>
+
+        <div class="question" id="q4-block">
+          <p>4. In the past four weeks, how often have you felt too tired to do work or daily activities?</p>
+        </div>
+
+        <div class="question" id="q5-block">
+          <p>5. In the past four weeks, how often have you felt fed up or irritated because of your headaches?</p>
+        </div>
+
+        <div class="question" id="q6-block">
+          <p>6. In the past four weeks, how often did headaches limit your ability to concentrate?</p>
+        </div>
+      </fieldset>
+
+      <button type="button" onclick="calculateLikertScore()">Calculate Score</button>
+
+      <div class="score" id="totalScore" aria-live="polite"></div>
+      <div class="video-description" id="videoInfo"></div>
+    </form>
+  </div>
+
+  <script>
+    function generateRadioRow(qstnId) {
+      const options = [
+        { label: "Never", value: 6 },
+        { label: "Rarely", value: 8 },
+        { label: "Sometimes", value: 10 },
+        { label: "Very Often", value: 11 },
+        { label: "Always", value: 13 }
+      ];
+
+      const container = document.createElement("div");
+      container.className = "tick-row";
+
+      options.forEach(opt => {
+        const label = document.createElement("label");
+        label.className = "tick-option";
+
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = qstnId;
+        input.value = opt.value;
+        input.required = true;
+
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(opt.label));
+        container.appendChild(label);
+      });
+
+      document.getElementById(qstnId + "-block").appendChild(container);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      for (let i = 1; i <= 6; i++) {
+        generateRadioRow("q" + i);
+      }
+    });
+
+    function calculateLikertScore() {
+      let total = 0;
+      let grade = '';
+      let videoURL = '';
+      let description = '';
+
+      for (let i = 1; i <= 6; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (!selected) {
+          alert("Please answer all questions.");
+          return;
+        }
+        total += parseInt(selected.value);
+      }
+
+      if (total <= 40) {
+        grade = 'Grade I: Little or no disability';
+        videoURL = 'https://www.youtube.com/shorts/z6WuaGTKGT0';
+        description = 'Learn how to manage occasional headaches and prevent escalation.';
+      } else if (total <= 60) {
+        grade = 'Grade II: Mild disability';
+        videoURL = 'https://www.youtube.com/shorts/RM1JcwBcNDI';
+        description = 'Understand mild migraine triggers and early interventions.';
+      } else if (total <= 75) {
+        grade = 'Grade III: Moderate disability';
+        videoURL = 'https://www.youtube.com/shorts/kjMwParVztw';
+        description = 'Watch strategies for managing moderate migraine disability.';
+      } else {
+        grade = 'Grade IV: Severe disability';
+        videoURL = 'https://www.youtube.com/shorts/H1l1WGUpOW8';
+        description = 'Get guidance on clinical treatment for severe migraines.';
+      }
+
+      document.getElementById("totalScore").innerText = `Total Score: ${total}\n${grade}`;
+      document.getElementById("videoInfo").innerHTML = `
+        <p>${description}</p>
+        <a href="${videoURL}" target="_blank" rel="noopener noreferrer">📺 Watch Video</a>
+      `;
+    }
+  </script>
+</body>
+</html>
